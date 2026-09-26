@@ -1,0 +1,344 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Job Market 📱</title><style>
+:root{--bg:#0b1020;--card:#131a2e;--line:#233052;--tx:#dfe8ff;--dim:#8494b8;
+--gold:#f2cc60;--grn:#5ad487;--red:#f2726a;--acc:#6ea8ff}
+*{box-sizing:border-box;margin:0}body{background:var(--bg);color:var(--tx);
+font:15px/1.45 -apple-system,'Segoe UI',Roboto,'Noto Sans KR',sans-serif;padding:12px 12px 70px}
+h1{font-size:18px}h1 b{color:var(--gold)}
+.sub{color:var(--dim);font-size:11.5px;margin:2px 0 10px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+.chip{flex:0 0 auto;padding:5px 11px;border-radius:15px;background:var(--card);
+border:1px solid var(--line);color:var(--dim);font-size:12.5px;white-space:nowrap}
+.chip.on{background:#1d2c4f;color:#fff;border-color:var(--acc);font-weight:600}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin:8px 0}
+.k{color:var(--dim);font-size:11px}.v{font-size:19px;font-weight:700;margin-top:2px}
+.sec{margin:14px 0 6px;font-size:13px;color:var(--gold);font-weight:700}
+.m{display:flex;justify-content:space-between;gap:8px;padding:8px 2px;border-bottom:1px solid var(--line);align-items:center}
+.m:last-child{border:0}.mt{font-size:13px;font-weight:600}.mc{color:var(--dim);font-size:11.5px}
+.ms{color:var(--grn);font-weight:700;font-size:13.5px;text-align:right;white-space:nowrap}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0}
+.btn{padding:8px 13px;border-radius:10px;border:1px solid var(--line);background:#1a2440;
+color:#fff;font-size:12.5px;font-weight:600}
+.btn.g{background:#16321f;border-color:#2c5c3a}.btn.warn{background:#3a1f24;border-color:#5c2e35}
+.btn.sm{padding:5px 10px;font-size:11.5px}
+.tag{padding:3px 9px;border-radius:9px;font-size:12px;font-weight:700}
+.tag.on{background:#123324;color:var(--grn)}.tag.off{background:#33161a;color:var(--red)}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12px}
+.bar .lb{flex:0 0 34%;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .tr{flex:1;background:#1a2440;border-radius:5px;height:14px;overflow:hidden}
+.bar .fl{height:100%;background:linear-gradient(90deg,#3b6ecc,#6ea8ff);border-radius:5px}
+.bar .n{flex:0 0 52px;text-align:right;color:var(--dim);font-size:11px}
+.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0d1428;
+border-top:1px solid var(--line);z-index:9}
+.tab{flex:1;text-align:center;padding:10px 0 max(10px,env(safe-area-inset-bottom));
+color:var(--dim);font-size:12px;font-weight:600}
+.tab.on{color:var(--gold)}
+textarea,input[type=text]{width:100%;background:#0d1426;border:1px solid var(--line);
+border-radius:10px;color:var(--tx);font:14px/1.5 inherit;padding:10px}
+pre.resume{white-space:pre-wrap;font:12px/1.55 inherit;color:#cdd9f2;max-height:52vh;
+overflow-y:auto;background:#0d1426;border:1px solid var(--line);border-radius:10px;padding:12px}
+details{margin-top:8px}summary{color:var(--grn);font-size:12.5px;font-weight:700}
+.score{font-size:26px;font-weight:800}
+.foot{margin-top:14px;color:var(--dim);font-size:11px;line-height:1.6}
+#err{color:var(--red);font-size:12px;margin:8px 0;display:none}
+.spin{color:var(--dim);font-size:13px;padding:18px 0;text-align:center}
+</style></head><body style='padding-top:26px'>
+<script>window.LTXSIM_STATIC=true;window.LTXSIM_ENC=true;</script>
+<div id='snapbar' style='position:fixed;top:0;left:0;right:0;z-index:99;background:#1a2540;color:#bfe8cb;font-size:12px;text-align:center;padding:5px 8px;border-bottom:1px solid #2a3550'>🔒 암호화된 개인 스냅샷 · PIN 입력 필요</div>
+<h1>GLOBAL TECH <b>JOB MARKET</b> 📱</h1>
+<div class="sub">시뮬레이터 전 기능 모바일판 · 로컬 앱이 꺼져도 동작 (3D 시각화는 데스크톱 전용)</div>
+<div id="chips" class="chips"></div>
+<div id="err"></div>
+<div id="view"><div class="spin">불러오는 중…</div></div>
+<div class="tabs">
+ <div class="tab on" id="t-home" onclick="tab('home')">요약</div>
+ <div class="tab" id="t-ins" onclick="tab('ins')">분석</div>
+ <div class="tab" id="t-search" onclick="tab('search')">검색</div>
+ <div class="tab" id="t-rs" onclick="tab('rs')">이력서</div>
+ 
+</div>
+<script>
+let region=localStorage.getItem('rg')||'Global', cur='home', B=null, IV=null;
+const $=s=>document.querySelector(s), V=()=>$('#view');
+async function j(u,body,retried){
+ if(window.LTXSIM_STATIC)return staticGet(u,body);
+ const h={'Content-Type':'application/json'};
+ const pin=localStorage.getItem('pin');if(pin)h['X-Pin']=pin;
+ const o=body?{method:'POST',headers:h,body:JSON.stringify(body)}:{headers:h};
+ const r=await fetch(u,o);
+ if(r.status===401){localStorage.removeItem('pin');showLivePinForm();throw new Error('__pin__')}
+ if(!r.ok)throw new Error(r.status);return r.json()}
+// live app PIN gate — an in-page form, NOT prompt() (mobile browsers block prompt)
+function showLivePinForm(msg){
+ V().innerHTML=`<div class="card" style="max-width:340px;margin:52px auto 0;text-align:center">
+  <div style="font-size:34px">🔒</div><div style="font-weight:800;font-size:16px;margin:4px 0">PIN 입력</div>
+  <div class="mc" style="margin-bottom:10px">이 앱은 PIN으로 보호되어 있습니다.</div>
+  ${msg?`<div style="color:#ff6b6b;font-size:13px;margin-bottom:8px">${esc(msg)}</div>`:''}
+  <input id="lpin" type="password" inputmode="numeric" autocomplete="off"
+   style="width:100%;padding:12px;font-size:18px;text-align:center;border-radius:9px;
+   border:1px solid #2a3550;background:#0d1428;color:#e8eefc;box-sizing:border-box" placeholder="PIN"/>
+  <button class="btn g" style="width:100%;margin-top:10px;padding:12px;font-size:15px" onclick="submitLivePin()">열기</button>
+  </div>`;
+ const inp=$('#lpin');if(inp){inp.focus();inp.addEventListener('keydown',e=>{if(e.key==='Enter')submitLivePin()})}}
+function submitLivePin(){const el=$('#lpin');const p=el?el.value.trim():'';
+ if(!p){showLivePinForm('PIN을 입력하세요');return}localStorage.setItem('pin',p);chips();render()}
+// Static snapshot (GitHub Pages, PC-off): reads map to prebuilt ./data/*.json; server-only
+// writes (interview grading, resume edit, scheduler) aren't possible without a live server.
+async function staticGet(u,body){
+ const[path,qs]=u.split('?');const q=new URLSearchParams(qs||'');
+ const region=q.get('region')||localStorage.getItem('rg')||'Global';
+ const WRITE=['/api/interview/start','/api/interview/answer','/api/resume/add',
+   '/api/resume/restore','/api/sched','/api/sched/run_now'];
+ if(body||WRITE.includes(path))
+  throw new Error('이 기능은 정적 스냅샷에서 지원되지 않습니다 — 실시간 주소(터널/Tailscale)로 접속하세요.');
+ const F={'/api/bootstrap':'bootstrap.'+region+'.json','/api/insights':'insights.'+region+'.json',
+   '/api/regions':'regions.json','/api/resumes':'resumes.json',
+   '/api/resume':'resume.'+(q.get('slug')||'')+'.json','/api/interview/trends':'trends.json',
+   '/api/status':'status.json','/api/remote':'remote.json'};
+ const f=F[path];
+ if(!f)throw new Error('정적 스냅샷 미지원: '+path);
+ return staticData(f)}
+// encrypted snapshots ship only ciphertext; the key is derived from the PIN in-browser
+let ENCKEY=null;
+async function staticData(name){
+ if(window.LTXSIM_ENC){const k=await ltxUnlock();return decWith(k,name);}
+ const r=await fetch('./data/'+name);if(!r.ok)throw new Error('데이터 없음');return r.json()}
+async function decWith(key,name){
+ const res=await fetch('./data/'+name+'.enc');if(!res.ok)throw new Error('데이터 없음');
+ const buf=await res.arrayBuffer();const iv=new Uint8Array(buf.slice(0,12));const ct=buf.slice(12);
+ const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct);
+ return JSON.parse(new TextDecoder().decode(pt))}
+async function deriveKey(pin){
+ const cr=await fetch('./data/_crypto.json').then(r=>r.json());
+ const salt=Uint8Array.from(atob(cr.salt),c=>c.charCodeAt(0));
+ const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);
+ return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:cr.iters,hash:'SHA-256'},
+   base,{name:'AES-GCM',length:256},false,['decrypt'])}
+// derive from the STORED pin only (no prompt); the in-page form below handles first entry —
+// native prompt() is blocked by many mobile browsers, so we never call it
+async function ltxUnlock(){
+ if(ENCKEY)return ENCKEY;
+ const pin=localStorage.getItem('encpin');
+ if(!pin)throw new Error('잠김');
+ const key=await deriveKey(pin);await decWith(key,'meta.json');ENCKEY=key;return key}
+function showPinForm(msg){
+ V().innerHTML=`<div class="card" style="max-width:340px;margin:52px auto 0;text-align:center">
+  <div style="font-size:34px">🔒</div>
+  <div style="font-weight:800;font-size:16px;margin:4px 0">PIN 입력</div>
+  <div class="mc" style="margin-bottom:10px">암호화된 개인 스냅샷입니다.</div>
+  ${msg?`<div style="color:#ff6b6b;font-size:13px;margin-bottom:8px">${esc(msg)}</div>`:''}
+  <input id="pinin" type="password" inputmode="numeric" autocomplete="off"
+   style="width:100%;padding:12px;font-size:18px;text-align:center;border-radius:9px;
+   border:1px solid #2a3550;background:#0d1428;color:#e8eefc;box-sizing:border-box" placeholder="PIN"/>
+  <button class="btn g" style="width:100%;margin-top:10px;padding:12px;font-size:15px" onclick="tryPin()">열기</button>
+  </div>`;
+ const inp=$('#pinin');if(inp){inp.focus();inp.addEventListener('keydown',e=>{if(e.key==='Enter')tryPin()})}}
+async function tryPin(){
+ const el=$('#pinin');const pin=el?el.value.trim():'';
+ if(!pin){showPinForm('PIN을 입력하세요');return}
+ V().innerHTML='<div class="spin">확인 중…</div>';
+ try{const key=await deriveKey(pin);await decWith(key,'meta.json');ENCKEY=key;
+   localStorage.setItem('encpin',pin);chips();render()}
+ catch(e){localStorage.removeItem('encpin');ENCKEY=null;
+   showPinForm('PIN이 올바르지 않습니다. 다시 시도하세요.')}}
+function esc(t){return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function fk(v){return v?'$'+Math.round(v/1000)+'K':'—'}
+function reachIcon(s){return {blocked:'⛔',no_sponsor:'⛔',sponsor:'✅',likely:'🟡',unknown:'⚪'}[s]||''}
+function dBadge(d){return {1:'L1 원리',2:'L2 트레이드오프',3:'L3 장애진단',4:'L4 설계'}[d]||''}
+function studyPlanHTML(sp){
+ if(!sp) return '';
+ let h='<div class="card"><div class="sec">📚 맞춤 학습 플랜</div>'+
+   '<div style="font-size:13px;margin-bottom:8px">'+esc(sp.summary)+'</div>';
+ if((sp.priority||[]).length){
+  h+='<div style="font-weight:700;font-size:12.5px;margin:6px 0 3px">우선 학습 개념</div>';
+  h+=sp.priority.map(p=>`<span style="display:inline-block;background:#2a3550;border-radius:10px;`+
+     `padding:2px 9px;margin:2px 3px 2px 0;font-size:12px">${esc(p.concept)}</span>`).join('');
+ }
+ (sp.weak_areas||[]).filter(w=>w.avg<6.5).forEach(w=>{
+  h+=`<div style="margin-top:10px;border-left:3px solid var(--red);padding-left:8px">`+
+     `<div style="font-weight:700;font-size:13px">${esc(w.area_ko)} · 평균 ${w.avg}/10</div>`+
+     (w.concepts&&w.concepts.length?`<div class="mc" style="margin-top:2px">보강 개념: ${w.concepts.map(esc).join(', ')}</div>`:'')+
+     (w.why?`<div style="font-size:12px;color:#bfe8cb;margin-top:3px">핵심: ${esc(w.why)}</div>`:'')+`</div>`;
+ });
+ if((sp.strong_areas||[]).length)
+  h+=`<div class="mc" style="margin-top:8px">✅ 탄탄한 영역: ${sp.strong_areas.map(esc).join(', ')}</div>`;
+ return h+'</div>';
+}
+function reachCol(s){return (s==='blocked'||s==='no_sponsor')?'var(--red)':s==='sponsor'?'var(--grn)':'var(--dim)'}
+function err(e){if(e&&e.message==='__pin__')return;   // PIN form already shown, not an error
+ $('#err').textContent='오류: '+e.message;$('#err').style.display='block';
+ setTimeout(()=>$('#err').style.display='none',4000)}
+async function chips(){try{const rs=await j('/api/regions');
+ $('#chips').innerHTML=rs.map(r=>`<span class="chip${r===region?' on':''}" onclick="go('${r}')">${r}</span>`).join('')}catch(e){}}
+function go(r){region=r;localStorage.setItem('rg',r);B=null;chips();render()}
+function tab(t){cur=t;document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+ $('#t-'+t).classList.add('on');render()}
+function bars(items,key){const mx=Math.max(...items.map(i=>i.n),1);
+ return items.map(i=>`<div class="bar"><span class="lb">${esc(i.name)}</span>
+ <span class="tr"><span class="fl" style="width:${Math.max(3,100*i.n/mx)}%"></span></span>
+ <span class="n">${i.n.toLocaleString()}${key==='tc'&&i.tc?' · '+fk(i.tc):''}</span></div>`).join('')}
+async function render(){try{
+ if(cur==='home')await home(); else if(cur==='ins')await ins();
+ else if(cur==='search')await search();
+ else if(cur==='iv')await iv(); else if(cur==='rs')await rs(); else await setv();
+}catch(e){err(e)}}
+// client-side search over the exported job index (static snapshot's core dataset)
+let SEARCH=null;
+async function loadSearch(){if(SEARCH)return SEARCH;SEARCH=await staticData('search.json');return SEARCH}
+function search(){
+ V().innerHTML=`<div class="sec">🔎 전체 공고 검색</div>
+ <input id="sq" placeholder="직무·회사·도시·스킬 (예: ml inference berlin)" autocomplete="off"
+   style="width:100%;padding:11px;border-radius:9px;border:1px solid #2a3550;background:#0d1428;
+   color:#e8eefc;font-size:15px;box-sizing:border-box"/>
+ <div id="sres" class="mc" style="margin-top:8px">인덱스 불러오는 중…</div>`;
+ const inp=$('#sq');let t=null;
+ loadSearch().then(idx=>{
+  $('#sres').textContent=idx.length.toLocaleString()+'건 인덱스 준비됨 — 검색어를 입력하세요';
+  const run=()=>{const qq=inp.value.trim().toLowerCase();
+   if(qq.length<2){$('#sres').textContent=idx.length.toLocaleString()+'건 — 2자 이상 입력';return}
+   const terms=qq.split(/\s+/);
+   const hit=idx.filter(x=>{const blob=(x.t+' '+x.co+' '+x.ct+' '+x.lv+' '+x.in+' '+(x.sk||[]).join(' ')).toLowerCase();
+    return terms.every(tm=>blob.includes(tm))});
+   const top=hit.slice(0,80);
+   $('#sres').innerHTML=`<div style="margin-bottom:6px">${hit.length.toLocaleString()}건 일치${hit.length>80?' (상위 80 표시)':''}</div>`+
+    top.map(x=>`<div class="m"><div><div class="mt">${esc(x.t)}</div>
+    <div class="mc">${esc(x.co)}${x.ct?' · '+esc(x.ct):''}${x.lv?' · '+esc(x.lv):''}${x.cp?' · '+fk(x.cp):''}${x.pd?' · '+x.pd:''}</div>
+    ${(x.sk||[]).length?`<div class="mc" style="font-size:11px">${x.sk.slice(0,6).map(esc).join(' · ')}</div>`:''}</div>
+    ${x.u?`<a class="btn sm" href="${esc(x.u)}" target="_blank" rel="noopener">지원</a>`:''}</div>`).join('')};
+  inp.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(run,180)});
+  inp.focus();
+ }).catch(e=>{$('#sres').textContent='검색 인덱스를 불러오지 못했습니다'});
+}
+async function boot(){if(!B)B=await j('/api/bootstrap?region='+encodeURIComponent(region));return B}
+async function home(){V().innerHTML='<div class="spin">불러오는 중…</div>';const b=await boot();const s=b.summary;
+ V().innerHTML=`<div class="grid">
+ <div class="card"><div class="k">공고 (${b.days}일)</div><div class="v">${(s.total??0).toLocaleString()}</div></div>
+ <div class="card"><div class="k">기업</div><div class="v">${(s.companies??0).toLocaleString()}</div></div>
+ <div class="card"><div class="k">base 중위</div><div class="v">${fk(s.base_med)}</div></div>
+ <div class="card"><div class="k">TC 중위</div><div class="v">${fk(s.tc_med)}</div></div></div>
+ <div class="sec">★ 내 매칭 상위 JD — [면접]으로 바로 모의면접</div>
+ <div class="card">${(b.matches||[]).map(m=>`<div class="m">
+  <div><div class="mt">${esc(m.title)}</div><div class="mc">${esc(m.company)}${m.city?' · '+esc(m.city):''}${m.posted?' · '+m.posted:''}</div>
+  ${m.reach?`<div class="mc" style="color:${reachCol(m.reach.state)}">${reachIcon(m.reach.state)} ${esc(m.reach.label)}</div>`:''}</div>
+  <div style="display:flex;gap:6px;align-items:center"><span class="ms">${m.score.toFixed(0)}%<div class="mc">${m.comp?fk(m.comp):''}</div></span>
+  <button class="btn sm g" onclick="ivStart(${m.id})">면접</button></div></div>`).join('')||'<div class="mc">없음</div>'}</div>
+ <div class="foot">DB ${b.db.rows.toLocaleString()}행 · 최신 ${b.db.newest}</div>`}
+async function ins(){V().innerHTML='<div class="spin">분석 계산 중…</div>';
+ const d=await j('/api/insights?region='+encodeURIComponent(region));
+ V().innerHTML=`
+ <div class="sec">채용이 가장 많은 기업</div><div class="card">${bars(d.companies)}</div>
+ <div class="sec">산업별 공고</div><div class="card">${bars(d.industries)}</div>
+ <div class="sec">직급별 (건수 · TC 중위)</div><div class="card">${bars(d.levels,'tc')}</div>
+ <div class="sec">수요 높은 역량</div><div class="card">${bars(d.skills)}</div>
+ <div class="sec">도시별 공고</div><div class="card">${bars(d.cities)}</div>
+ <div class="sec">연봉 구간</div><div class="card">${bars(d.bands)}</div>
+ <div class="sec">게시 추이 (14일)</div><div class="card">${bars(d.timeline.map(t=>({name:t.d,n:t.n})))}</div>
+ <div class="foot">base 중위 ${fk(d.salary.base_median)} (p25 ${fk(d.salary.base_p25)} / p75 ${fk(d.salary.base_p75)}) · TC 중위 ${fk(d.salary.tc_median)}</div>`}
+async function ivStart(id){cur='iv';document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+ $('#t-iv').classList.add('on');V().innerHTML='<div class="spin">질문 생성 중…</div>';
+ try{IV=await j('/api/interview/start',{job_id:id});if(IV.error)throw new Error(IV.error);
+ IV.hist=[];ivQ()}catch(e){err(e);IV=null;iv()}}
+function ivQ(){V().innerHTML=`
+ <div class="card"><div class="mc">${esc(IV.job)} · 채점: ${IV.mode==='api'?'Claude 정밀':'휴리스틱(오프라인)'}</div>
+ <div class="sec">${IV.probe?'↳ 꼬리질문 · ':''}Q${IV.i}/${IV.n} ${IV.focus?'· '+esc(IV.focus):''}${IV.depth&&!IV.probe?' · '+dBadge(IV.depth):''}</div>
+ <div style="font-size:14px">${esc(IV.q)}</div></div>
+ <div class="card"><textarea id="ans" rows="6" placeholder="답변 입력 (영어 권장)"></textarea>
+ <div class="row"><span class="mc">제출하면 채점 + 모범해답 공개</span>
+ <button class="btn g" onclick="ivSend()">제출 ▸</button></div></div>
+ ${IV.hist.map(h=>h).join('')}`}
+async function ivSend(){const a=$('#ans').value.trim();if(!a)return;
+ V().innerHTML='<div class="spin">채점 중…</div>';
+ const r=await j('/api/interview/answer',{sid:IV.sid,answer:a});if(r.error){err(new Error(r.error));IV=null;return iv()}
+ const col=r.score>=6.5?'var(--grn)':r.score>=4?'var(--gold)':'var(--red)';
+ const card=`<div class="card"><div class="row"><span class="score" style="color:${col}">${r.score.toFixed(1)}/10</span>
+  <span class="mc">Q${r.i}/${r.n} · ${r.mode==='api'?'Claude':'휴리스틱'}</span></div>
+  <div style="font-size:13px">${esc(r.feedback)}</div>
+  ${r.model_answer?`<details><summary>📖 모범해답 (채점 기준)</summary>
+   <div style="font-size:12.5px;color:#bfe8cb;margin-top:6px">${esc(r.model_answer)}</div></details>`:''}</div>`;
+ IV.hist.unshift(card);
+ if(r.verdict){const v=r.verdict;const vc=v.passed?'var(--grn)':'var(--red)';
+  V().innerHTML=`<div class="card" style="text-align:center">
+  <div class="score" style="color:${vc};font-size:34px">${v.total.toFixed(1)} / 100</div>
+  <div style="color:${vc};font-weight:800;font-size:18px">${v.passed?'합격 — 다음 라운드':'불합격 — 기준('+v.pass_score+') 미달'}</div>
+  <div class="mc" style="margin-top:6px">문항별: ${v.scores.map(s=>s.toFixed(1)).join(' · ')}</div>
+  <button class="btn" style="margin-top:10px" onclick="IV=null;iv()">다른 JD로 다시</button></div>`+studyPlanHTML(r.study_plan)+IV.hist.join('');IV=null}
+ else{IV.q=r.next.q;IV.focus=r.next.focus;IV.depth=r.next.depth;IV.probe=r.next.probe;IV.i=r.next.i;ivQ()}}
+async function iv(){if(IV)return ivQ();V().innerHTML='<div class="spin">…</div>';const b=await boot();
+ V().innerHTML=`<div class="sec">모의 기술면접 — JD 선택</div>
+ <div class="card">${(b.matches||[]).map(m=>`<div class="m"><div><div class="mt">${esc(m.title)}</div>
+ <div class="mc">${esc(m.company)} · 적합도 ${m.score.toFixed(0)}%</div></div>
+ <button class="btn sm g" onclick="ivStart(${m.id})">시작</button></div>`).join('')||'매칭 없음'}</div>
+ ${await trendsHTML()}
+ <div class="foot">질문: 이력서×JD×기업 은행(168문항·L1~L4) · 개념 커버리지 채점 + 적응형 꼬리질문 + 종료 후 학습 플랜</div>`}
+async function trendsHTML(){
+ try{const t=await j('/api/interview/trends');if(!t||!t.count)return '';
+  let h='<div class="card"><div class="sec">📈 내 인터뷰 이력</div>'+
+    `<div style="font-size:13px">${t.count}회 · 평균 <b>${t.avg_total}</b>/100 · 합격률 ${t.pass_rate}%</div>`;
+  if((t.recurring_concepts||[]).length){
+   h+='<div style="font-weight:700;font-size:12px;margin:6px 0 3px">반복되는 약점 개념</div>';
+   h+=t.recurring_concepts.slice(0,8).map(c=>`<span style="display:inline-block;background:#4a2a2a;`+
+      `border-radius:10px;padding:2px 9px;margin:2px 3px 2px 0;font-size:12px">${esc(c.concept)} ×${c.times}</span>`).join('');
+  } else if((t.recurring_areas||[]).length){
+   const a=t.recurring_areas[0];
+   h+=`<div class="mc" style="margin-top:5px">가장 약한 영역: ${esc(a.area)} (평균 ${a.avg}/10)</div>`;
+  }
+  return h+'</div>';
+ }catch(e){return ''}
+}
+async function rs(slug){V().innerHTML='<div class="spin">…</div>';
+ if(!slug){const L=await j('/api/resumes');
+  V().innerHTML=`<div class="sec">이력서 보관함 — 회사·포지션별 맞춤 이력서</div>
+  <div class="card">${L.map(t=>`<div class="m" onclick="rs('${t.slug}')"><div>
+  <div class="mt">${esc(t.company)}</div><div class="mc">${esc(t.title)}</div></div>
+  <span class="ms">v${t.nversions}<div class="mc">${t.mtime.slice(5)}</div></span></div>`).join('')}</div>`;return}
+ const r=await j('/api/resume?slug='+slug);
+ V().innerHTML=`<div class="row"><button class="btn sm" onclick="rs()">← 목록</button>
+ <span class="mc">${esc(r.company)} · v${r.versions.length}</span></div>
+ <pre class="resume">${esc(r.text)}</pre>
+ <div class="card"><div class="sec" style="margin-top:0">✍ 인터랙티브 추가</div>
+ <input type="text" id="ins-txt" placeholder="예) 핵심 역량에 CUDA 최적화 성과 추가">
+ <div class="row"><span class="mc">스냅샷 자동 저장 · API 키 있으면 자연 통합</span>
+ <button class="btn g" onclick="rsAdd('${slug}')">추가 ▸</button></div></div>
+ <details><summary>버전 기록 (${r.versions.length})</summary>
+ ${r.versions.map(v=>`<div class="m"><div><div class="mc">${v.ts} [${v.mode}]</div>
+ <div style="font-size:12px">${esc(v.note)}</div></div>
+ <button class="btn sm warn" onclick="rsRestore('${slug}','${v.ts}')">복원</button></div>`).join('')}</details>`}
+async function rsAdd(slug){const t=$('#ins-txt').value.trim();if(!t)return;
+ V().innerHTML='<div class="spin">적용 중…</div>';
+ try{const r=await j('/api/resume/add',{slug,instruction:t});err(new Error(r.msg||'적용됨'))}catch(e){err(e)}
+ rs(slug)}
+async function rsRestore(slug,ts){if(!confirm(ts+' 버전으로 복원할까요?'))return;
+ await j('/api/resume/restore',{slug,ts});rs(slug)}
+async function setv(){const s=await j('/api/status');const st=s.sched;
+ V().innerHTML=`<div class="sec">⏱ 백그라운드 스케줄러</div>
+ <div class="card"><div class="row"><span>상태 <span class="tag ${st.on?'on':'off'}">${st.on?'ON':'OFF'}</span>
+ <span class="mc"> · ${st.interval_min}분 주기</span></span>
+ <button class="btn ${st.on?'warn':'g'}" onclick="tgS(${!st.on})">${st.on?'끄기':'켜기'}</button></div>
+ <div class="row"><span class="mc">마지막: ${st.last_run||'—'}<br>${esc(st.last_result||'')}</span>
+ <button class="btn" onclick="runNow()">지금 갱신</button></div></div>
+ <div class="sec">서버</div><div class="card mc">데몬 pid ${s.daemon_pid} · 포트 ${s.port} ·
+ 가동 ${Math.floor(s.uptime_s/60)}분 · 데스크톱 앱 ${s.sim_running?'실행 중(스케줄 양보)':'꺼짐(데몬이 갱신)'}</div>
+ ${await remoteHTML()}
+ <div class="foot">3D 시각화(월드맵·특징공간 등)는 데스크톱 전용 — 그 외 데이터·매칭·면접·이력서 기능은 모두 여기서 동작합니다.</div>`}
+async function remoteHTML(){
+ try{const r=await j('/api/remote');if(!r||!(r.urls||[]).length)return '';
+  let h='<div class="sec">🔒 고정 원격 주소</div><div class="card">';
+  h+=r.urls.map(u=>`<div class="row"><span class="mc" style="word-break:break-all">${esc(u.url)}</span>`+
+     `<button class="btn" onclick="navigator.clipboard&&navigator.clipboard.writeText('${u.url}');err(new Error('주소 복사됨'))">복사</button></div>`+
+     `<div class="mc" style="font-size:11px;margin:-4px 0 6px">${esc(u.note)}</div>`).join('');
+  h+=`<div class="mc" style="font-size:11px">${r.sleep_safe?'✅ 24시간 접속 가능':'ⓘ 이 주소는 PC가 깨어 있을 때만 응답합니다. PC 슬립에도 24시간 접속하려면 NAS에 Tailscale+앱을 올리세요(README_NAS).'}</div>`;
+  return h+'</div>';
+ }catch(e){return ''}
+}
+async function tgS(on){await j('/api/sched',{on});setv()}
+async function runNow(){await j('/api/sched/run_now',{});err(new Error('갱신 요청됨 (수 분 소요)'));setv()}
+// encrypted snapshot: if a PIN is already saved, try it silently; otherwise show the in-page
+// PIN form (NOT the native prompt, which mobile browsers block). Only after unlock do we render.
+if(window.LTXSIM_ENC){
+  if(localStorage.getItem('encpin')){ltxUnlock().then(()=>{chips();render()}).catch(()=>showPinForm());}
+  else{showPinForm();}
+}else{chips();render();}
+setInterval(()=>{if(cur==='home'&&!window.LTXSIM_ENC){B=null;render()}},90000);
+</script></body></html>
